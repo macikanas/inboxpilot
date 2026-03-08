@@ -54,19 +54,32 @@ function toolLabel(name: string): string {
   return labels[name] || name.replace(/_/g, " ");
 }
 
-function toolIcon(name: string): string {
-  const icons: Record<string, string> = {
-    search_emails: "\uD83D\uDD0D",
-    read_email: "\uD83D\uDCD6",
-    send_email: "\uD83D\uDCE4",
-    mark_email: "\u2713",
-    list_folders: "\uD83D\uDCC2",
-    delete_email: "\uD83D\uDDD1",
-    move_email: "\uD83D\uDCC1",
-    forward_email: "\u2197",
-    unsubscribe: "\uD83D\uDEAB",
-  };
-  return icons[name] || "\u2699";
+function Spinner() {
+  return (
+    <svg
+      className="animate-spin"
+      width="14"
+      height="14"
+      viewBox="0 0 14 14"
+      fill="none"
+      style={{ flexShrink: 0 }}
+    >
+      <circle
+        cx="7"
+        cy="7"
+        r="5.5"
+        stroke="currentColor"
+        strokeOpacity="0.25"
+        strokeWidth="2"
+      />
+      <path
+        d="M12.5 7a5.5 5.5 0 0 0-5.5-5.5"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
 }
 
 export default function MessageBubble({ role, content }: MessageBubbleProps) {
@@ -91,7 +104,7 @@ export default function MessageBubble({ role, content }: MessageBubbleProps) {
                 {seg.calls.map((call, j) => (
                   <span
                     key={j}
-                    className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-mono"
+                    className="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-lg font-mono"
                     style={{
                       background: isUser
                         ? "rgba(255,255,255,0.15)"
@@ -101,7 +114,7 @@ export default function MessageBubble({ role, content }: MessageBubbleProps) {
                         : "var(--text-muted)",
                     }}
                   >
-                    <span>{toolIcon(call.name)}</span>
+                    <Spinner />
                     <span>{toolLabel(call.name)}</span>
                     {call.count > 1 && (
                       <span
