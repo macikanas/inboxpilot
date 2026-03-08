@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import ChatInterface from "@/components/chat/ChatInterface";
 import Sidebar from "@/components/chat/Sidebar";
+import EmailPanel from "@/components/chat/EmailPanel";
 import CommandPalette from "@/components/CommandPalette";
 import { useKeyboardShortcuts } from "@/lib/hooks/useKeyboardShortcuts";
 
@@ -91,6 +92,14 @@ export default function AppPage() {
           onConversationCreated={handleConversationCreated}
         />
       </main>
+
+      {/* Email Inbox Panel */}
+      <div
+        className="w-[480px] shrink-0 flex flex-col"
+        style={{ borderLeft: "1px solid var(--bg-overlay-dark)" }}
+      >
+        <EmailPanel />
+      </div>
 
       {/* Command Palette */}
       <CommandPalette
