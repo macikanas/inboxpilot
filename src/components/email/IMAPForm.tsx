@@ -52,7 +52,6 @@ export default function IMAPForm({ onConnected }: IMAPFormProps) {
     }
   };
 
-  // Auto-fill SMTP host when IMAP host is entered
   const handleImapHostChange = (value: string) => {
     setForm((prev) => ({
       ...prev,
@@ -61,12 +60,18 @@ export default function IMAPForm({ onConnected }: IMAPFormProps) {
     }));
   };
 
+  const inputStyle = {
+    background: "var(--bg-overlay-dark)",
+    border: "1px solid var(--bg-overlay-light)",
+    color: "var(--text-primary)",
+  };
+
   if (success) {
     return (
       <div className="text-center py-8">
-        <div className="text-4xl mb-3">✅</div>
-        <h3 className="text-lg font-semibold text-gray-800">Connected!</h3>
-        <p className="text-gray-500 text-sm mt-1">Your email account is ready to use.</p>
+        <div className="text-4xl mb-3">{"\u2705"}</div>
+        <h3 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>Connected!</h3>
+        <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>Your email account is ready to use.</p>
       </div>
     );
   }
@@ -74,117 +79,131 @@ export default function IMAPForm({ onConnected }: IMAPFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg">{error}</div>
+        <div className="text-sm px-4 py-3 rounded-lg" style={{ background: "rgba(239,68,68,0.15)", color: "var(--accent-red)" }}>
+          {error}
+        </div>
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+        <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-tertiary)" }}>Email Address</label>
         <input
           type="email"
           value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })}
           required
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2"
+          style={inputStyle}
           placeholder="you@company.com"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Display Name (optional)</label>
+        <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-tertiary)" }}>Display Name (optional)</label>
         <input
           type="text"
           value={form.displayName}
           onChange={(e) => setForm({ ...form, displayName: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2"
+          style={inputStyle}
           placeholder="John Doe"
         />
       </div>
 
       <div className="grid grid-cols-3 gap-3">
         <div className="col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">IMAP Host</label>
+          <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-tertiary)" }}>IMAP Host</label>
           <input
             type="text"
             value={form.imapHost}
             onChange={(e) => handleImapHostChange(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2"
+            style={inputStyle}
             placeholder="mail.company.com"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Port</label>
+          <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-tertiary)" }}>Port</label>
           <input
             type="number"
             value={form.imapPort}
             onChange={(e) => setForm({ ...form, imapPort: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2"
+            style={inputStyle}
           />
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
         <div className="col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">SMTP Host</label>
+          <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-tertiary)" }}>SMTP Host</label>
           <input
             type="text"
             value={form.smtpHost}
             onChange={(e) => setForm({ ...form, smtpHost: e.target.value })}
             required
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2"
+            style={inputStyle}
             placeholder="mail.company.com"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Port</label>
+          <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-tertiary)" }}>Port</label>
           <input
             type="number"
             value={form.smtpPort}
             onChange={(e) => setForm({ ...form, smtpPort: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2"
+            style={inputStyle}
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+        <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-tertiary)" }}>Username</label>
         <input
           type="text"
           value={form.username}
           onChange={(e) => setForm({ ...form, username: e.target.value })}
           required
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2"
+          style={inputStyle}
           placeholder="you@company.com or username"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+        <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-tertiary)" }}>Password</label>
         <input
           type="password"
           value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })}
           required
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2"
+          style={inputStyle}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Sent Folder Name</label>
+        <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-tertiary)" }}>Sent Folder Name</label>
         <input
           type="text"
           value={form.sentFolderName}
           onChange={(e) => setForm({ ...form, sentFolderName: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2"
+          style={inputStyle}
           placeholder="Sent Messages, Sent, INBOX.Sent"
         />
-        <p className="text-xs text-gray-400 mt-1">Varies by mail server: &quot;Sent Messages&quot;, &quot;Sent&quot;, &quot;INBOX.Sent&quot;</p>
+        <p className="text-xs mt-1" style={{ color: "var(--text-subtle)" }}>
+          Varies by mail server: &quot;Sent Messages&quot;, &quot;Sent&quot;, &quot;INBOX.Sent&quot;
+        </p>
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-300 transition-colors"
+        className="w-full py-2.5 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-40"
+        style={{ background: "var(--accent-purple)" }}
       >
         {loading ? "Testing connection..." : "Connect Email Account"}
       </button>
