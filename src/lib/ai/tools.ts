@@ -65,6 +65,60 @@ export const emailTools = [
       required: [],
     },
   },
+  {
+    name: "delete_email",
+    description: "Delete one or more emails. IMPORTANT: Always confirm with the user before deleting and tell them how many emails will be affected. By default moves to Trash; set permanent=true to permanently delete.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        uid: { type: "number", description: "Email UID to delete (for single email)" },
+        uids: { type: "array", items: { type: "number" }, description: "Array of UIDs to delete (for bulk)" },
+        folder: { type: "string", description: "Source folder (default: INBOX)" },
+        permanent: { type: "boolean", description: "If true, permanently delete instead of moving to Trash (default: false)" },
+      },
+      required: [],
+    },
+  },
+  {
+    name: "move_email",
+    description: "Move one or more emails to another folder. Common destinations: 'Archive' for archiving, 'Junk' or 'Spam' for spam, any custom folder name. Use list_folders first if unsure about folder names.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        uid: { type: "number", description: "Email UID to move (for single email)" },
+        uids: { type: "array", items: { type: "number" }, description: "Array of UIDs to move (for bulk)" },
+        from_folder: { type: "string", description: "Source folder (default: INBOX)" },
+        to_folder: { type: "string", description: "Destination folder name" },
+      },
+      required: ["to_folder"],
+    },
+  },
+  {
+    name: "forward_email",
+    description: "Forward an email to another recipient. Optionally add a comment above the forwarded content. IMPORTANT: Always show the user what will be forwarded and confirm before sending.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        uid: { type: "number", description: "Email UID to forward" },
+        folder: { type: "string", description: "Folder containing the email (default: INBOX)" },
+        to: { type: "string", description: "Recipient email address(es), comma-separated" },
+        comment: { type: "string", description: "Optional message to add above the forwarded email" },
+      },
+      required: ["uid", "to"],
+    },
+  },
+  {
+    name: "unsubscribe",
+    description: "Unsubscribe from a mailing list by reading the email's List-Unsubscribe header and acting on it. Works for newsletters and marketing emails that include unsubscribe headers.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        uid: { type: "number", description: "Email UID of the newsletter/mailing list email" },
+        folder: { type: "string", description: "Folder containing the email (default: INBOX)" },
+      },
+      required: ["uid"],
+    },
+  },
 ];
 
 // Convert to OpenAI function calling format
