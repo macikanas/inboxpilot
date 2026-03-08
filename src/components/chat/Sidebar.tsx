@@ -18,7 +18,6 @@ interface SidebarProps {
 export default function Sidebar({ activeId, onSelect, refreshTrigger }: SidebarProps) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     fetch("/api/conversations")
@@ -30,72 +29,79 @@ export default function Sidebar({ activeId, onSelect, refreshTrigger }: SidebarP
   }, [refreshTrigger]);
 
   return (
-    <div className="flex flex-col">
-      {/* Header bar */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-        <div className="flex items-center gap-2">
-          <span className="text-lg">âï¸</span>
-          <h1 className="text-base font-bold text-gray-900">InboxPilot</h1>
+    <div
+      className="w-72 flex flex-col h-full border-r"
+      style={{ background: "var(--bg-base)", borderColor: "var(--bg-overlay-dark)" }}
+    >
+      {/* Header */}
+      <div className="p-4" style={{ borderBottom: "1px solid var(--bg-overlay-dark)" }}>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-xl">{"\u2709\uFE0F"}</span>
+          <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>InboxPilot</h1>
         </div>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
-            title="Chat history"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </button>
-          <button
-            onClick={() => { onSelect(null); setExpanded(false); }}
-            className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
-            title="New chat"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-          </button>
-          <a
-            href="/settings"
-            className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
-            title="Settings"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </a>
-        </div>
+        <button
+          onClick={() => onSelect(null)}
+          className="w-full px-3 py-2 text-white text-sm font-medium rounded-lg transition-colors"
+          style={{ background: "var(--accent-purple)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--accent-purple-hover)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "var(--accent-purple)")}
+        >
+          + New Chat
+        </button>
       </div>
 
-      {/* Expandable conversation history */}
-      {expanded && (
-        <div className="max-h-64 overflow-y-auto border-b border-gray-100 bg-gray-50">
-          {loading ? (
-            <div className="p-3 text-xs text-gray-400">Loading...</div>
-          ) : conversations.length === 0 ? (
-            <div className="p-3 text-xs text-gray-400">No conversations yet</div>
-          ) : (
-            conversations.map((conv) => (
-              <button
-                key={conv.id}
-                onClick={() => { onSelect(conv.id); setExpanded(false); }}
-                className={`w-full text-left px-4 py-2.5 border-b border-gray-100/50 hover:bg-gray-100 transition-colors ${
-                  activeId === conv.id ? "bg-blue-50 border-l-2 border-l-blue-500" : ""
-                }`}
-              >
-                <p className="text-xs font-medium text-gray-700 truncate">
-                  {conv.title || "New conversation"}
+      {/* Conversations */}
+      <div className="flex-1 overflow-y-auto">
+        {loading ? (
+          <div className="p-4 text-sm" style={{ color: "var(--text-subtle)" }}>Loading...</div>
+        ) : conversations.length === 0 ? (
+          <div className="p-4 text-sm" style={{ color: "var(--text-subtle)" }}>No conversations yet</div>
+        ) : (
+          conversations.map((conv) => (
+            <button
+              key={conv.id}
+              onClick={() => onSelect(conv.id)}
+              className="w-full text-left px-4 py-3 transition-colors"
+              style={{
+                background: activeId === conv.id ? "var(--bg-surface)" : "transparent",
+                borderLeft: activeId === conv.id ? "2px solid var(--accent-purple)" : "2px solid transparent",
+              }}
+              onMouseEnter={(e) => {
+                if (activeId !== conv.id) e.currentTarget.style.background = "var(--bg-surface)";
+              }}
+              onMouseLeave={(e) => {
+                if (activeId !== conv.id) e.currentTarget.style.background = "transparent";
+              }}
+            >
+              <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>
+                {conv.title || "New conversation"}
+              </p>
+              {conv.messages[0] && (
+                <p className="text-xs truncate mt-1" style={{ color: "var(--text-muted)" }}>
+                  {conv.messages[0].content.substring(0, 60)}
                 </p>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {new Date(conv.updatedAt).toLocaleDateString()}
-                </p>
-              </button>
-            ))
-          )}
-        </div>
-      )}
+              )}
+              <p className="text-xs mt-1" style={{ color: "var(--text-subtle)" }}>
+                {new Date(conv.updatedAt).toLocaleDateString()}
+              </p>
+            </button>
+          ))
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="p-3" style={{ borderTop: "1px solid var(--bg-overlay-dark)" }}>
+        <a
+          href="/settings"
+          className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors"
+          style={{ color: "var(--text-muted)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-surface)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+        >
+          <span>{"\u2699\uFE0F"}</span>
+          Settings
+        </a>
+      </div>
     </div>
   );
 }
