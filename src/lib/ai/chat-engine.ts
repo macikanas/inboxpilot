@@ -164,14 +164,16 @@ export async function* chatWithOpenAI(
       openaiMessages.push(choice.message);
 
       for (const toolCall of choice.message.tool_calls) {
-        const args = JSON.parse(toolCall.function.arguments);
-        yield `\n[Calling ${toolCall.function.name}...]\n`;
+        if (toolCall.type !== "function") continue;
+        const fnCall = toolCall as { id: string; type: "function"; function: { name: string; arguments: string } };
+        const args = JSON.parse(fnCall.function.arguments);
+        yield `\n[Calling ${fnCall.function.name}...]\n`;
 
-        const toolResult = await executeToolCall(toolCall.function.name, args, account);
+        const toolResult = await executeToolCall(fnCall.function.name, args, account);
 
         openaiMessages.push({
           role: "tool",
-          tool_call_id: toolCall.id,
+          tool_call_id: fnCall.id,
           content: toolResult,
         });
       }
