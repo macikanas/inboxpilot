@@ -1,4 +1,5 @@
 import { ImapFlow } from "imapflow";
+// @ts-expect-error - mailparser lacks type declarations
 import { simpleParser, ParsedMail } from "mailparser";
 import { decrypt } from "../crypto";
 
@@ -46,7 +47,7 @@ function getImapConfig(account: EmailAccountConfig) {
       user: decrypt(account.encryptedUsername),
       pass: decrypt(account.encryptedPassword),
     },
-    logger: false,
+    logger: false as const,
   };
 }
 
@@ -127,7 +128,7 @@ export async function readEmail(account: EmailAccountConfig, uid: number, folder
         messageId: parsed.messageId || "",
         inReplyTo: parsed.inReplyTo || "",
         body: parsed.text || parsed.html?.replace(/<[^>]+>/g, "") || "",
-        attachments: (parsed.attachments || []).map((a) => ({
+        attachments: (parsed.attachments || []).map((a: any) => ({
           filename: a.filename || "unknown",
           size: a.size,
           contentType: a.contentType,
