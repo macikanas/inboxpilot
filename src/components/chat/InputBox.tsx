@@ -48,7 +48,6 @@ export default function InputBox({ onSend, disabled }: InputBoxProps) {
             background: "var(--bg-overlay-dark)",
             border: "1px solid var(--bg-overlay-light)",
             color: "var(--text-primary)",
-            focusRingColor: "var(--accent-purple)",
           }}
         />
         <button
