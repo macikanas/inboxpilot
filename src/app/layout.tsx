@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "InboxPilot — AI Email Assistant",
+  title: "InboxPilot \u2014 AI Email Assistant",
   description: "Manage your email through natural conversation with AI",
 };
 
@@ -19,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body className={`${inter.variable} antialiased`}>
         <Providers>{children}</Providers>
       </body>
