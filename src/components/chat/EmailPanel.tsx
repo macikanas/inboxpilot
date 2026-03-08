@@ -27,7 +27,7 @@ function formatDate(dateStr: string): string {
   const diff = now.getTime() - date.getTime();
   const hours = diff / (1000 * 60 * 60);
 
-  if (hours < 24 && date.getDate() === now.getDate()) {
+  if (hours < 24) {
     return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
   }
   if (hours < 168) {
@@ -38,8 +38,8 @@ function formatDate(dateStr: string): string {
 
 function getInitialColor(name: string): string {
   const colors = [
-    "bg-blue-500", "bg-emerald-500", "bg-purple-500", "bg-amber-500",
-    "bg-rose-500", "bg-cyan-500", "bg-indigo-500", "bg-teal-500",
+    "#3B82F6", "#10B981", "#7C5CFC", "#F59E0B",
+    "#EC4899", "#06B6D4", "#6366F1", "#14B8A6",
   ];
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
@@ -63,11 +63,7 @@ export default function EmailPanel({ onEmailAction }: EmailPanelProps) {
     fetch("/api/email/inbox?limit=30")
       .then((r) => r.json())
       .then((data) => {
-        if (Array.isArray(data)) {
-          setEmails(data);
-        } else if (data.error) {
-          setError(data.error);
-        }
+        if (Array.isArray(data)) setEmails(data);
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
@@ -85,13 +81,19 @@ export default function EmailPanel({ onEmailAction }: EmailPanelProps) {
 
   if (error) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-white">
+      <div
+        className="flex-1 flex items-center justify-center"
+        style={{ background: "var(--bg-base)" }}
+      >
         <div className="text-center p-8">
-          <div className="text-4xl mb-3 opacity-40">ð­</div>
-          <p className="text-sm text-gray-500 mb-4">Connect your email in Settings to see your inbox here</p>
+          <div className="text-4xl mb-3 opacity-40">{"\uD83D\uDCE7"}</div>
+          <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>
+            Connect your email in Settings to see your inbox here
+          </p>
           <a
             href="/settings"
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            className="text-sm font-medium"
+            style={{ color: "var(--accent-purple)" }}
           >
             Go to Settings
           </a>
@@ -101,13 +103,24 @@ export default function EmailPanel({ onEmailAction }: EmailPanelProps) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full" style={{ background: "var(--bg-base)" }}>
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
-        <div className="flex items-center gap-2">
-          <h2 className="text-base font-semibold text-gray-900">Inbox</h2>
-          {!loading && (
-            <span className="text-xs text-gray-400 font-medium">
+      <div
+        className="px-5 py-3 flex items-center justify-between"
+        style={{ borderBottom: "1px solid var(--bg-overlay-dark)" }}
+      >
+        <div className="flex items-center gap-3">
+          <h2 className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>
+            Inbox
+          </h2>
+          {emails.filter((e) => !e.isRead).length > 0 && (
+            <span
+              className="text-xs px-2 py-0.5 rounded-full font-medium"
+              style={{
+                color: "var(--text-muted)",
+                background: "var(--bg-overlay-dark)",
+              }}
+            >
               {emails.filter((e) => !e.isRead).length} unread
             </span>
           )}
@@ -115,11 +128,22 @@ export default function EmailPanel({ onEmailAction }: EmailPanelProps) {
         <button
           onClick={refreshInbox}
           disabled={loading}
-          className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-40"
+          className="p-1.5 rounded-md transition-colors disabled:opacity-40"
+          style={{ color: "var(--text-muted)" }}
           title="Refresh"
         >
-          <svg className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          <svg
+            className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
           </svg>
         </button>
       </div>
@@ -128,29 +152,48 @@ export default function EmailPanel({ onEmailAction }: EmailPanelProps) {
       <div className="flex-1 overflow-y-auto">
         {loading && emails.length === 0 ? (
           <div className="p-8 text-center">
-            <div className="inline-block w-5 h-5 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-3" />
-            <p className="text-sm text-gray-400">Loading emails...</p>
+            <div
+              className="inline-block w-5 h-5 border-2 rounded-full animate-spin mb-3"
+              style={{ borderColor: "var(--bg-overlay-light)", borderTopColor: "var(--accent-purple)" }}
+            />
+            <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+              Loading emails...
+            </p>
           </div>
         ) : emails.length === 0 ? (
           <div className="p-8 text-center">
-            <div className="text-3xl mb-2 opacity-40">ð­</div>
-            <p className="text-sm text-gray-400">No emails found</p>
+            <div className="text-3xl mb-2 opacity-40">{"\uD83D\uDCE7"}</div>
+            <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+              No emails found
+            </p>
           </div>
         ) : (
           emails.map((email) => (
             <button
               key={email.uid}
               onClick={() => setSelectedUid(selectedUid === email.uid ? null : email.uid)}
-              className={`w-full text-left px-5 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors ${
-                selectedUid === email.uid ? "bg-blue-50" : ""
-              } ${!email.isRead ? "" : "opacity-70"}`}
+              className="w-full text-left px-5 py-3 transition-colors"
+              style={{
+                borderBottom: "1px solid var(--bg-overlay-dark)",
+                background:
+                  selectedUid === email.uid
+                    ? "var(--bg-surface)"
+                    : "transparent",
+              }}
+              onMouseEnter={(e) => {
+                if (selectedUid !== email.uid)
+                  e.currentTarget.style.background = "var(--bg-overlay-dark)";
+              }}
+              onMouseLeave={(e) => {
+                if (selectedUid !== email.uid)
+                  e.currentTarget.style.background = "transparent";
+              }}
             >
               <div className="flex items-start gap-3">
                 {/* Avatar */}
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0 mt-0.5 ${getInitialColor(
-                    email.from
-                  )}`}
+                  className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0"
+                  style={{ background: getInitialColor(formatFrom(email.from)) }}
                 >
                   {getInitial(email.from)}
                 </div>
@@ -160,19 +203,30 @@ export default function EmailPanel({ onEmailAction }: EmailPanelProps) {
                   <div className="flex items-center justify-between gap-2">
                     <span
                       className={`text-sm truncate ${
-                        !email.isRead ? "font-semibold text-gray-900" : "font-medium text-gray-600"
+                        !email.isRead ? "font-semibold" : "font-medium"
                       }`}
+                      style={{
+                        color: !email.isRead
+                          ? "var(--text-primary)"
+                          : "var(--text-tertiary)",
+                      }}
                     >
                       {formatFrom(email.from)}
                     </span>
-                    <span className="text-xs text-gray-400 shrink-0">
+                    <span
+                      className="text-xs shrink-0"
+                      style={{ color: "var(--text-muted)" }}
+                    >
                       {formatDate(email.date)}
                     </span>
                   </div>
                   <p
-                    className={`text-sm truncate mt-0.5 ${
-                      !email.isRead ? "text-gray-800" : "text-gray-500"
-                    }`}
+                    className={`text-sm truncate mt-0.5`}
+                    style={{
+                      color: !email.isRead
+                        ? "var(--text-secondary)"
+                        : "var(--text-muted)",
+                    }}
                   >
                     {email.subject || "(no subject)"}
                   </p>
@@ -180,7 +234,10 @@ export default function EmailPanel({ onEmailAction }: EmailPanelProps) {
 
                 {/* Unread dot */}
                 {!email.isRead && (
-                  <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-2" />
+                  <div
+                    className="w-2 h-2 rounded-full shrink-0 mt-2"
+                    style={{ background: "var(--accent-blue)" }}
+                  />
                 )}
               </div>
             </button>
