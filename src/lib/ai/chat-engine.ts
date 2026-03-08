@@ -1,18 +1,22 @@
 import Anthropic from "@anthropic-ai/sdk";
 import OpenAI from "openai";
 import { emailTools, getOpenAITools } from "./tools";
-import { searchEmails, readEmail, markEmail, listFolders, type EmailAccountConfig } from "../email/imap-client";
+import { searchEmails, readEmail, markEmail, listFolders, deleteEmail, moveEmail, getEmailHeaders, type EmailAccountConfig } from "../email/imap-client";
 import { sendEmail } from "../email/smtp-client";
 
-const SYSTEM_PROMPT = `You are InboxPilot, an AI email assistant. You help users search, read, understand, and respond to their emails through natural conversation.
+const SYSTEM_PROMPT = `You are InboxPilot, an AI email assistant. You help users search, read, understand, manage, and respond to their emails through natural conversation.
 
 Key behaviors:
 - Use the available tools to interact with the user's email
 - Respond in the same language the user writes in
-- When asked to send an email, ALWAYS show the draft first and ask for confirmation
-- Summarize emails concisely — highlight key info, action items, and important details
+- When asked to send or forward an email, ALWAYS show the draft first and ask for confirmation
+- When asked to delete emails, ALWAYS confirm with the user first â tell them exactly how many emails will be affected and which ones
+- When moving emails, confirm the destination folder with the user
+- For bulk operations (delete all, move all, etc.), search first, show what was found, get confirmation, then act
+- Summarize emails concisely â highlight key info, action items, and important details
 - When multiple emails are found, present them in a clear organized way
-- Be helpful and proactive — suggest follow-ups, flag important items`;
+- Be helpful and proactive â suggest follow-ups, flag important items, offer to unsubscribe from newsletters
+- For unsubscribe requests, read the email first to check for List-Unsubscribe headers, then use the unsubscribe tool`;
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -75,6 +79,77 @@ async function executeToolCall(toolName: string, input: Record<string, any>, acc
         const folders = await listFolders(config);
         return JSON.stringify(folders, null, 2);
       }
+      case "delete_email": {
+        const uids = input.uids || (input.uid ? [input.uid] : []);
+        if (uids.length === 0) return JSON.stringify({ error: "No UIDs provided" });
+        const result = await deleteEmail(config, uids, input.folder || "INBOX", input.permanent || false);
+        return JSON.stringify(result);
+      }
+      case "move_email": {
+        const uids = input.uids || (input.uid ? [input.uid] : []);
+        if (uids.length === 0) return JSON.stringify({ error: "No UIDs provided" });
+        const result = await moveEmail(config, uids, input.from_folder || "INBOX", input.to_folder);
+        return JSON.stringify(result);
+      }
+      case "forward_email": {
+        const email = await readEmail(config, input.uid, input.folder || "INBOX");
+        const fwdBody = [
+          input.comment || "",
+          input.comment ? "\n\n" : "",
+          "---------- Forwarded message ----------",
+          `From: ${email.from}`,
+          `Date: ${email.date}`,
+          `Subject: ${email.subject}`,
+          `To: ${email.to}`,
+          "",
+          email.body,
+        ].join("\n");
+        const result = await sendEmail(
+          { ...config, smtpHost: account.smtpHost, smtpPort: account.smtpPort, email: account.email },
+          { to: input.to, subject: `Fwd: ${email.subject}`, body: fwdBody }
+        );
+        return JSON.stringify(result);
+      }
+      case "unsubscribe": {
+        const headers = await getEmailHeaders(config, input.uid, input.folder || "INBOX");
+        if (!headers.listUnsubscribe) {
+          return JSON.stringify({ error: "No List-Unsubscribe header found in this email. It may not be a mailing list." });
+        }
+        const unsubHeader = headers.listUnsubscribe;
+        // Parse mailto: and https: links from the header
+        const mailtoMatch = unsubHeader.match(/<mailto:([^>]+)>/i);
+        const httpsMatch = unsubHeader.match(/<(https?:\/\/[^>]+)>/i);
+        const actions: string[] = [];
+
+        if (mailtoMatch) {
+          const unsubEmail = mailtoMatch[1].split("?")[0]; // strip query params
+          const subjectMatch = mailtoMatch[1].match(/subject=([^&]*)/i);
+          try {
+            await sendEmail(
+              { ...config, smtpHost: account.smtpHost, smtpPort: account.smtpPort, email: account.email },
+              { to: unsubEmail, subject: subjectMatch ? decodeURIComponent(subjectMatch[1]) : "Unsubscribe", body: "Unsubscribe" }
+            );
+            actions.push(`Sent unsubscribe email to ${unsubEmail}`);
+          } catch (e: any) {
+            actions.push(`Failed to send unsubscribe email: ${e.message}`);
+          }
+        }
+
+        if (httpsMatch) {
+          actions.push(`Unsubscribe link: ${httpsMatch[1]} â click this link to complete unsubscription`);
+        }
+
+        if (actions.length === 0) {
+          return JSON.stringify({ error: "Could not parse unsubscribe options from header", raw: unsubHeader });
+        }
+
+        return JSON.stringify({
+          status: "processed",
+          from: headers.from,
+          subject: headers.subject,
+          actions,
+        });
+      }
       default:
         return JSON.stringify({ error: `Unknown tool: ${toolName}` });
     }
@@ -83,7 +158,7 @@ async function executeToolCall(toolName: string, input: Record<string, any>, acc
   }
 }
 
-// ─── Claude (Anthropic) ──────────────────────────────────────────
+// âââ Claude (Anthropic) ââââââââââââââââââââââââââââââââââââââââââ
 
 export async function* chatWithClaude(
   messages: ChatMessage[],
@@ -135,7 +210,7 @@ export async function* chatWithClaude(
   }
 }
 
-// ─── OpenAI ──────────────────────────────────────────────────────
+// âââ OpenAI ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 export async function* chatWithOpenAI(
   messages: ChatMessage[],
