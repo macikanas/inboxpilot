@@ -14,7 +14,7 @@ export default function InputBox({ onSend, disabled }: InputBoxProps) {
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 160) + "px";
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 200) + "px";
     }
   }, [message]);
 
@@ -33,26 +33,37 @@ export default function InputBox({ onSend, disabled }: InputBoxProps) {
   };
 
   return (
-    <div className="px-4 py-3 border-t border-gray-100">
-      <div className="flex items-end gap-2 bg-gray-50 rounded-xl px-3 py-2">
+    <div className="px-4 py-3" style={{ background: "var(--bg-base)", borderTop: "1px solid var(--bg-overlay-dark)" }}>
+      <div className="max-w-3xl mx-auto flex items-end gap-3">
         <textarea
           ref={textareaRef}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Find, write, schedule, organize, ask anything..."
+          placeholder="Ask about your emails..."
           disabled={disabled}
           rows={1}
-          className="flex-1 resize-none bg-transparent text-sm text-gray-800 placeholder-gray-400 focus:outline-none disabled:text-gray-300 py-1"
+          className="flex-1 resize-none rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 disabled:opacity-50"
+          style={{
+            background: "var(--bg-overlay-dark)",
+            border: "1px solid var(--bg-overlay-light)",
+            color: "var(--text-primary)",
+            focusRingColor: "var(--accent-purple)",
+          }}
         />
         <button
           onClick={handleSubmit}
           disabled={disabled || !message.trim()}
-          className="p-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors shrink-0"
+          className="px-4 py-3 rounded-xl text-white text-sm font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          style={{ background: "var(--accent-purple)" }}
+          onMouseEnter={(e) => {
+            if (!e.currentTarget.disabled) e.currentTarget.style.background = "var(--accent-purple-hover)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "var(--accent-purple)";
+          }}
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
+          Send
         </button>
       </div>
     </div>
