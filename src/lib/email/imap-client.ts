@@ -167,3 +167,84 @@ export async function saveToSent(account: EmailAccountConfig, rawMessage: string
     await client.append(account.sentFolderName, rawMessage, ["\\Seen"]);
   });
 }
+
+// ─── Delete emails (move to Trash or permanent) ────────────────
+
+export async function deleteEmail(
+  account: EmailAccountConfig,
+  uids: number | number[],
+  folder: string = "INBOX",
+  permanent: boolean = false
+): Promise<{ deleted: number[] }> {
+  const uidList = Array.isArray(uids) ? uids : [uids];
+  return withImap(account, async (client) => {
+    const lock = await client.getMailboxLock(folder);
+    try {
+      if (permanent) {
+        for (const uid of uidList) {
+          await client.messageDelete(uid.toString(), { uid: true });
+        }
+      } else {
+        // Find the Trash folder
+        const folders = await client.list();
+        const trashFolder = folders.find(
+          (f: any) => f.specialUse === "\\Trash" || /^(trash|deleted|bin)/i.test(f.path)
+        );
+        const trashPath = trashFolder?.path || "Trash";
+        for (const uid of uidList) {
+          await client.messageMove(uid.toString(), trashPath, { uid: true });
+        }
+      }
+      return { deleted: uidList };
+    } finally {
+      lock.release();
+    }
+  });
+}
+
+// ─── Move emails between folders ───────────────────────────────
+
+export async function moveEmail(
+  account: EmailAccountConfig,
+  uids: number | number[],
+  fromFolder: string = "INBOX",
+  toFolder: string
+): Promise<{ moved: number[]; to: string }> {
+  const uidList = Array.isArray(uids) ? uids : [uids];
+  return withImap(account, async (client) => {
+    const lock = await client.getMailboxLock(fromFolder);
+    try {
+      for (const uid of uidList) {
+        await client.messageMove(uid.toString(), toFolder, { uid: true });
+      }
+      return { moved: uidList, to: toFolder };
+    } finally {
+      lock.release();
+    }
+  });
+}
+
+// ─── Get email headers (for unsubscribe) ───────────────────────
+
+export async function getEmailHeaders(
+  account: EmailAccountConfig,
+  uid: number,
+  folder: string = "INBOX"
+): Promise<{ listUnsubscribe?: string; listUnsubscribePost?: string; from: string; subject: string }> {
+  return withImap(account, async (client) => {
+    const lock = await client.getMailboxLock(folder);
+    try {
+      const raw = await client.download(uid.toString(), undefined, { uid: true });
+      const parsed: ParsedMail = await simpleParser(raw.content);
+      const headers = parsed.headers;
+      return {
+        listUnsubscribe: headers?.get("list-unsubscribe")?.toString() || undefined,
+        listUnsubscribePost: headers?.get("list-unsubscribe-post")?.toString() || undefined,
+        from: parsed.from?.text || "",
+        subject: parsed.subject || "",
+      };
+    } finally {
+      lock.release();
+    }
+  });
+}
