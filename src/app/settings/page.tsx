@@ -57,33 +57,46 @@ export default function SettingsPage() {
     setTimeout(() => setSaved(false), 2000);
   };
 
+  const cardStyle = {
+    background: "var(--bg-surface)",
+    border: "1px solid var(--bg-overlay-dark)",
+  };
+
+  const inputStyle = {
+    background: "var(--bg-overlay-dark)",
+    border: "1px solid var(--bg-overlay-light)",
+    color: "var(--text-primary)",
+  };
+
   if (!settings) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-400">Loading settings...</p>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-overflow)" }}>
+        <p style={{ color: "var(--text-subtle)" }}>Loading settings...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ background: "var(--bg-overflow)" }}>
       <div className="max-w-2xl mx-auto py-8 px-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-            <p className="text-gray-500 text-sm mt-1">{settings.email}</p>
+            <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Settings</h1>
+            <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>{settings.email}</p>
           </div>
           <div className="flex gap-3">
             <button
               onClick={() => router.push("/app")}
-              className="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 text-sm rounded-lg transition-colors"
+              style={{ border: "1px solid var(--bg-overlay-light)", color: "var(--text-muted)" }}
             >
-              ← Back to Chat
+              {"\u2190"} Back to Chat
             </button>
             <button
               onClick={() => signOut({ callbackUrl: "/signin" })}
-              className="px-4 py-2 text-sm text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+              className="px-4 py-2 text-sm rounded-lg transition-colors"
+              style={{ color: "var(--accent-red)", border: "1px solid rgba(239,68,68,0.3)" }}
             >
               Sign Out
             </button>
@@ -91,53 +104,57 @@ export default function SettingsPage() {
         </div>
 
         {/* Email Accounts */}
-        <div className="bg-white rounded-xl border p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Email Accounts</h2>
+        <div className="rounded-xl p-6 mb-6" style={cardStyle}>
+          <h2 className="text-lg font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Email Accounts</h2>
 
           {settings.emailAccounts.length > 0 ? (
             <div className="space-y-3 mb-4">
               {settings.emailAccounts.map((account) => (
                 <div
                   key={account.id}
-                  className="flex items-center justify-between border border-gray-100 rounded-lg p-3"
+                  className="flex items-center justify-between rounded-lg p-3"
+                  style={{ border: "1px solid var(--bg-overlay-dark)" }}
                 >
                   <div>
-                    <p className="text-sm font-medium text-gray-800">{account.email}</p>
-                    <p className="text-xs text-gray-400">
-                      {account.provider.toUpperCase()} · {account.imapHost}
+                    <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{account.email}</p>
+                    <p className="text-xs" style={{ color: "var(--text-subtle)" }}>
+                      {account.provider.toUpperCase()} {"\u00B7"} {account.imapHost}
                     </p>
                   </div>
-                  <span className="text-xs px-2 py-1 bg-green-50 text-green-600 rounded-full">
+                  <span
+                    className="text-xs px-2 py-1 rounded-full"
+                    style={{ background: "rgba(20,184,166,0.15)", color: "var(--accent-teal)" }}
+                  >
                     Connected
                   </span>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-400 mb-4">No email accounts connected yet.</p>
+            <p className="text-sm mb-4" style={{ color: "var(--text-subtle)" }}>No email accounts connected yet.</p>
           )}
 
           {showIMAPForm ? (
-            <div className="border border-gray-200 rounded-lg p-4">
+            <div className="rounded-lg p-4" style={{ border: "1px solid var(--bg-overlay-light)" }}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-gray-700">Connect IMAP Account</h3>
+                <h3 className="text-sm font-medium" style={{ color: "var(--text-tertiary)" }}>Connect IMAP Account</h3>
                 <button
                   onClick={() => setShowIMAPForm(false)}
-                  className="text-sm text-gray-400 hover:text-gray-600"
+                  className="text-sm" style={{ color: "var(--text-subtle)" }}
                 >
                   Cancel
                 </button>
               </div>
               <IMAPForm onConnected={() => {
                 setShowIMAPForm(false);
-                // Refresh settings
                 fetch("/api/settings").then((r) => r.json()).then(setSettings);
               }} />
             </div>
           ) : (
             <button
               onClick={() => setShowIMAPForm(true)}
-              className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 text-sm text-white rounded-lg transition-colors"
+              style={{ background: "var(--accent-purple)" }}
             >
               + Connect Email Account
             </button>
@@ -145,58 +162,58 @@ export default function SettingsPage() {
         </div>
 
         {/* AI Provider */}
-        <div className="bg-white rounded-xl border p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">AI Provider</h2>
+        <div className="rounded-xl p-6 mb-6" style={cardStyle}>
+          <h2 className="text-lg font-semibold mb-4" style={{ color: "var(--text-primary)" }}>AI Provider</h2>
 
           <div className="space-y-3 mb-4">
-            <label className="flex items-center gap-3 border rounded-lg p-3 cursor-pointer hover:bg-gray-50">
-              <input
-                type="radio"
-                name="provider"
-                value="claude"
-                checked={provider === "claude"}
-                onChange={() => { setProvider("claude"); setModel(""); }}
-                className="w-4 h-4 text-blue-600"
-              />
-              <div>
-                <p className="text-sm font-medium text-gray-800">Claude (Anthropic)</p>
-                <p className="text-xs text-gray-400">Best for nuanced email understanding</p>
-              </div>
-            </label>
-            <label className="flex items-center gap-3 border rounded-lg p-3 cursor-pointer hover:bg-gray-50">
-              <input
-                type="radio"
-                name="provider"
-                value="openai"
-                checked={provider === "openai"}
-                onChange={() => { setProvider("openai"); setModel(""); }}
-                className="w-4 h-4 text-blue-600"
-              />
-              <div>
-                <p className="text-sm font-medium text-gray-800">GPT-4o (OpenAI)</p>
-                <p className="text-xs text-gray-400">Fast and capable</p>
-              </div>
-            </label>
+            {[
+              { value: "claude", label: "Claude (Anthropic)", desc: "Best for nuanced email understanding" },
+              { value: "openai", label: "GPT-4o (OpenAI)", desc: "Fast and capable" },
+            ].map((opt) => (
+              <label
+                key={opt.value}
+                className="flex items-center gap-3 rounded-lg p-3 cursor-pointer transition-colors"
+                style={{
+                  border: `1px solid ${provider === opt.value ? "var(--accent-purple)" : "var(--bg-overlay-dark)"}`,
+                  background: provider === opt.value ? "rgba(124,92,252,0.08)" : "transparent",
+                }}
+              >
+                <input
+                  type="radio"
+                  name="provider"
+                  value={opt.value}
+                  checked={provider === opt.value}
+                  onChange={() => { setProvider(opt.value); setModel(""); }}
+                  className="w-4 h-4 accent-purple-500"
+                />
+                <div>
+                  <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{opt.label}</p>
+                  <p className="text-xs" style={{ color: "var(--text-subtle)" }}>{opt.desc}</p>
+                </div>
+              </label>
+            ))}
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Model (optional)</label>
+            <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-tertiary)" }}>Model (optional)</label>
             <input
               type="text"
               value={model}
               onChange={(e) => setModel(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2"
+              style={inputStyle}
               placeholder={provider === "claude" ? "claude-sonnet-4-20250514" : "gpt-4o"}
             />
-            <p className="text-xs text-gray-400 mt-1">Leave blank for default model</p>
+            <p className="text-xs mt-1" style={{ color: "var(--text-subtle)" }}>Leave blank for default model</p>
           </div>
 
           <button
             onClick={saveAISettings}
             disabled={saving}
-            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 transition-colors"
+            className="px-4 py-2 text-sm text-white rounded-lg transition-colors disabled:opacity-40"
+            style={{ background: "var(--accent-purple)" }}
           >
-            {saving ? "Saving..." : saved ? "✓ Saved" : "Save AI Settings"}
+            {saving ? "Saving..." : saved ? "\u2713 Saved" : "Save AI Settings"}
           </button>
         </div>
       </div>
